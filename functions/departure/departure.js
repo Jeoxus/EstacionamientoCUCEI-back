@@ -46,6 +46,7 @@ const getAdvancedDepartures = () => {
         .then((departuresSnapshot) => {
             const departureStructure = [];
             let departures = departuresSnapshot.docs;
+            departures = departures.map(departureDoc => departureDoc.data());
             departures = departures.sort((a, b) => a.date < b.date);
 
             for (let i = 1, j = departures.length; i < j; i++) {
