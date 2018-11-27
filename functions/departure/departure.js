@@ -1,6 +1,6 @@
 const firebase = require('../firebase');
 const firestore = require('../utils/firestore');
-
+const errorManager = require('../utils/error');
 const collections = require('../utils/collections').collections;
 
 const departuresRef = firebase.admin.firestore().collection(collections.departures);
@@ -31,9 +31,44 @@ const getRecentDepartures = () => {
             return departures;
         })
         .catch((error) => {
-            throw errorMannager.getHttpError(400, 'couldn\'t park', error);
+            throw errorManager.getHttpError(400, 'couldn\'t get departures', error);
+        });
+};
+
+const getAdvancedDepartures = () => {
+    const minDate = new Date();
+    minDate.setHours(minDate.getHours() - 1);
+    minDate.setFullYear(2000);
+    const maxDate = new Date();
+    maxDate.setFullYear(2000);
+
+    return departuresRef.get()
+        .then((departuresSnapshot) => {
+            const departureStructure = [];
+            let departures = departuresSnapshot.docs;
+            departures = departures.sort((a, b) => a.date < b.date);
+
+            for (let i = 1, j = departures.length; i < j; i++) {
+                const date = departures[i].date.toDate();
+                const prevDate = departures[i-1].date.toDate();
+                date.setFullYear(2000);
+                prevDate.setFullYear(2000);
+                if (date >= minDate && date <= maxDate) {
+                    const waitInterval = date.toMillis() - prevDate.toMillis();
+                    if (waitInterval < 1000 * 60 * 60 * 12) {
+                        departureStructure.push(date.toMillis());
+                        departureStructure.push(waitInterval);
+                    }
+                }
+            }
+
+            return departureStructure;
+        })
+        .catch((error) => {
+            throw errorManager.getHttpError(400, 'couldn\'t get departures', error);
         });
 };
 
 exports.newDeparture = newDeparture;
 exports.getRecentDepartures = getRecentDepartures;
+exports.getAdvancedDepartures = getAdvancedDepartures;

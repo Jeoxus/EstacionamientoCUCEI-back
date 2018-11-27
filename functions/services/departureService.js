@@ -10,4 +10,14 @@ const getRecentDepartures = firebase.functions.https.onRequest((req, res) =>
     })
 );
 
+const getAdvancedDepartures = firebase.functions.https.onRequest((req, res) =>
+    departureManager.getAdvancedDepartures()
+        .then(departures => res.send(departures))
+        .catch(error => {
+            console.log(error);
+            return res.status(error.httpStatus).send(error);
+        })
+);
+
 exports.getRecentDepartures = getRecentDepartures;
+exports.getAdvancedDepartures = getAdvancedDepartures;
