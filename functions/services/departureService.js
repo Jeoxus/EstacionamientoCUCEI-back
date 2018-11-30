@@ -19,5 +19,15 @@ const getAdvancedDepartures = firebase.functions.https.onRequest((req, res) =>
         })
 );
 
+const randomDepartures = firebase.functions.https.onRequest((req, res) =>
+    departureManager.randomDepartures()
+        .then(departures => res.send(departures))
+        .catch(error => {
+            console.log(error);
+            return res.status(error.httpStatus).send(error);
+        })
+);
+
 exports.getRecentDepartures = getRecentDepartures;
 exports.getAdvancedDepartures = getAdvancedDepartures;
+exports.randomDepartures = randomDepartures;
